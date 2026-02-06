@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-} from 'react-native';
+} from "react-native";
 
 interface Props {
   onSubmit: (input: string) => Promise<void>;
@@ -14,12 +14,12 @@ interface Props {
 }
 
 export function ExpenseInput({ onSubmit, isLoading }: Props) {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
   const handleSubmit = async () => {
     if (input.trim() && !isLoading) {
       await onSubmit(input.trim());
-      setInput('');
+      setInput("");
     }
   };
 
@@ -27,7 +27,7 @@ export function ExpenseInput({ onSubmit, isLoading }: Props) {
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="e.g., Spent 500 on groceries at BigBazaar"
+        placeholder="e.g., Spent 500 on groceries"
         placeholderTextColor="#999"
         value={input}
         onChangeText={setInput}
@@ -35,7 +35,10 @@ export function ExpenseInput({ onSubmit, isLoading }: Props) {
         onSubmitEditing={handleSubmit}
       />
       <TouchableOpacity
-        style={[styles.button, (!input.trim() || isLoading) && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          (!input.trim() || isLoading) && styles.buttonDisabled,
+        ]}
         onPress={handleSubmit}
         disabled={!input.trim() || isLoading}
       >
@@ -51,32 +54,32 @@ export function ExpenseInput({ onSubmit, isLoading }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     gap: 12,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 12,
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

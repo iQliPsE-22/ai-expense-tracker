@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   StatusBar,
   Keyboard,
+  Image,
 } from "react-native";
 import { api, Expense } from "../services/api";
 
@@ -162,18 +163,26 @@ export default function ExpenseTrackerScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <View className="p-5 pt-10 bg-white border-b border-gray-200">
-        <Text className="text-3xl font-extrabold text-gray-900 tracking-tighter mt-6">
-          AI Expense Tracker
-        </Text>
-        <Text className="text-sm text-gray-500 mt-1 font-medium">
-          Add expenses just like talking to a friend
-        </Text>
+        <View className="flex-row items-center gap-3 mt-6">
+          <Image
+            source={require("../../assets/ico.png")}
+            className="w-12 h-12 rounded-xl"
+          />
+          <View className="flex-col">
+            <Text className="text-2xl font-extrabold text-gray-900 tracking-tighter">
+              AI Expense Tracker
+            </Text>
+            <Text className="text-sm text-gray-500 mt-1 font-medium">
+              Add expenses just like talking to a friend
+            </Text>
+          </View>
+        </View>
       </View>
 
       <View className="p-4 flex-row gap-3 bg-white shadow-sm z-10">
         <TextInput
           className="flex-1 h-12 border border-blue-200 rounded-xl px-4 text-base bg-blue-50 text-gray-800"
-          placeholder="e.g., Spent 500 on groceries at BigBazaar"
+          placeholder="e.g., Spent 500 on groceries"
           value={input}
           onChangeText={setInput}
           returnKeyType="done"
