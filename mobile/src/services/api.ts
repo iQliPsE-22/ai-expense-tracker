@@ -56,4 +56,20 @@ export const api = {
       throw new Error(data.error || "Failed to delete expense");
     }
   },
+
+  async updateExpense(id: number, updates: Partial<Expense>): Promise<Expense> {
+    const response = await fetch(`${BASE_URL}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to update expense");
+    }
+    return data.expense;
+  },
 };

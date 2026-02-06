@@ -11,39 +11,11 @@ import {
   StatusBar,
   Keyboard,
   Image,
+  Modal,
 } from "react-native";
 import { api, Expense } from "../services/api";
-
-const CATEGORY_EMOJIS: Record<string, string> = {
-  "Food & Dining": "🍔",
-  Transport: "🚗",
-  Shopping: "🛒",
-  Entertainment: "📺",
-  "Bills & Utilities": "📄",
-  Health: "💊",
-  Travel: "✈️",
-  Other: "📦",
-};
-
-// Simple relative time helper
-const getRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return "Just now";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60)
-    return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24)
-    return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7)
-    return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
-
-  return date.toLocaleDateString();
-};
+import { ExpenseItem } from "../components/ExpenseItem";
+import { ExpenseInput } from "../components/ExpenseInput";
 
 export default function ExpenseTrackerScreen() {
   const [input, setInput] = useState("");
@@ -51,6 +23,12 @@ export default function ExpenseTrackerScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastAdded, setLastAdded] = useState<Expense | null>(null);
+
+  // Edit State
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCategory, setEditCategory] = useState("");
 
   useEffect(() => {
     loadExpenses();
@@ -118,44 +96,34 @@ export default function ExpenseTrackerScreen() {
     );
   };
 
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+    setEditAmount(expense.amount.toString());
+    setEditDescription(expense.description);
+    setEditCategory(expense.category);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingExpense) return;
+
+    try {
+      const updated = await api.updateExpense(editingExpense.id, {
+        amount: parseFloat(editAmount),
+        description: editDescription,
+        category: editCategory,
+      });
+
+      setExpenses(
+        expenses.map((e) => (e.id === editingExpense.id ? updated : e)),
+      );
+      setEditingExpense(null);
+    } catch (error) {
+      Alert.alert("Error", "Failed to update expense");
+    }
+  };
+
   const renderItem = ({ item }: { item: Expense }) => (
-    <View className="flex-row bg-white p-4 rounded-2xl items-center justify-between shadow-sm border border-gray-100 mb-3">
-      <View className="flex-row items-center gap-3 flex-1">
-        <Text className="text-3xl w-12 h-12 text-center bg-gray-50 rounded-xl overflow-hidden leading-[48px]">
-          {CATEGORY_EMOJIS[item.category] || "📦"}
-        </Text>
-        <View className="flex-1">
-          <Text className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5">
-            {item.category}
-          </Text>
-          <Text
-            className="text-base font-semibold text-gray-800 mb-0.5"
-            numberOfLines={1}
-          >
-            {item.description}
-          </Text>
-          {item.merchant && (
-            <Text className="text-xs text-gray-600 italic mb-0.5">
-              at {item.merchant}
-            </Text>
-          )}
-          <Text className="text-xs text-gray-400 mt-0.5">
-            {getRelativeTime(item.created_at)}
-          </Text>
-        </View>
-      </View>
-      <View className="items-end gap-3">
-        <Text className="text-lg font-extrabold text-gray-800">
-          ₹{item.amount}
-        </Text>
-        <TouchableOpacity
-          onPress={() => handleDelete(item.id)}
-          className="p-1.5 bg-red-50 rounded-lg"
-        >
-          <Text className="text-sm text-red-600 font-bold">✕</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <ExpenseItem item={item} onDelete={handleDelete} onEdit={handleEdit} />
   );
 
   return (
@@ -179,30 +147,12 @@ export default function ExpenseTrackerScreen() {
         </View>
       </View>
 
-      <View className="p-4 flex-row gap-3 bg-white shadow-sm z-10">
-        <TextInput
-          className="flex-1 h-12 border border-blue-200 rounded-xl px-4 text-base bg-blue-50 text-gray-800"
-          placeholder="e.g., Spent 500 on groceries"
-          value={input}
-          onChangeText={setInput}
-          returnKeyType="done"
-          onSubmitEditing={handleAddExpense}
-          editable={!submitting}
-        />
-        <TouchableOpacity
-          className={`w-16 h-12 rounded-xl justify-center items-center shadow-sm ${
-            !input.trim() || submitting ? "bg-gray-300" : "bg-accent"
-          }`}
-          onPress={handleAddExpense}
-          disabled={!input.trim() || submitting}
-        >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white font-semibold text-base">Add</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      <ExpenseInput
+        value={input}
+        onChangeText={setInput}
+        onSubmit={handleAddExpense}
+        isSubmitting={submitting}
+      />
 
       {lastAdded && (
         <View className="mx-4 mt-4 p-4 bg-green-50 rounded-xl border border-green-200 flex-row items-center gap-3">
@@ -235,6 +185,61 @@ export default function ExpenseTrackerScreen() {
           </View>
         }
       />
+
+      <Modal
+        visible={!!editingExpense}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEditingExpense(null)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-xl font-bold">Edit Expense</Text>
+              <TouchableOpacity
+                onPress={() => setEditingExpense(null)}
+                className="p-2 bg-gray-100 rounded-full"
+              >
+                <Text>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text className="text-sm font-bold text-gray-500 mb-1">Amount</Text>
+            <TextInput
+              value={editAmount}
+              onChangeText={setEditAmount}
+              keyboardType="numeric"
+              className="bg-gray-50 p-3 rounded-xl mb-4 font-bold text-lg border border-gray-200"
+            />
+
+            <Text className="text-sm font-bold text-gray-500 mb-1">
+              Description
+            </Text>
+            <TextInput
+              value={editDescription}
+              onChangeText={setEditDescription}
+              className="bg-gray-50 p-3 rounded-xl mb-4 border border-gray-200"
+            />
+
+            <Text className="text-sm font-bold text-gray-500 mb-1">
+              Category
+            </Text>
+            <TextInput
+              value={editCategory}
+              onChangeText={setEditCategory}
+              className="bg-gray-50 p-3 rounded-xl mb-6 border border-gray-200"
+            />
+
+            <TouchableOpacity
+              onPress={handleUpdate}
+              className="bg-accent p-4 rounded-xl items-center"
+            >
+              <Text className="text-white font-bold text-lg">Save Changes</Text>
+            </TouchableOpacity>
+            <View className="h-8" />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

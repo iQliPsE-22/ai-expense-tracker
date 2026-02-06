@@ -56,6 +56,42 @@ export const createExpense = (expense: ExpenseInput): Expense => {
   return getExpenseById(info.lastInsertRowid as number)!;
 };
 
+export const updateExpense = (
+  id: number,
+  updates: Partial<ExpenseInput>,
+): Expense | undefined => {
+  const current = getExpenseById(id);
+  if (!current) return undefined;
+
+  const fields = [];
+  const values: any[] = [];
+
+  if (updates.amount !== undefined) {
+    fields.push("amount = ?");
+    values.push(updates.amount);
+  }
+  if (updates.category !== undefined) {
+    fields.push("category = ?");
+    values.push(updates.category);
+  }
+  if (updates.description !== undefined) {
+    fields.push("description = ?");
+    values.push(updates.description);
+  }
+  if (updates.currency !== undefined) {
+    fields.push("currency = ?");
+    values.push(updates.currency);
+  }
+
+  if (fields.length === 0) return current;
+
+  values.push(id);
+  const query = `UPDATE expenses SET ${fields.join(", ")} WHERE id = ?`;
+  db.prepare(query).run(...values);
+
+  return getExpenseById(id);
+};
+
 export const getAllExpenses = (): Expense[] => {
   const stmt = db.prepare("SELECT * FROM expenses ORDER BY created_at DESC");
   return stmt.all() as Expense[];

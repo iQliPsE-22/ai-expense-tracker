@@ -1,113 +1,64 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Expense, CATEGORY_EMOJIS } from '../types';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Expense } from "../services/api";
+import { CATEGORY_EMOJIS, getRelativeTime } from "../utils/helpers";
 
-interface Props {
-  expense: Expense;
+interface ExpenseItemProps {
+  item: Expense;
   onDelete: (id: number) => void;
-  isDeleting: boolean;
+  onEdit: (expense: Expense) => void;
 }
 
-function getTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-  return date.toLocaleDateString();
-}
-
-export function ExpenseItem({ expense, onDelete, isDeleting }: Props) {
-  const emoji = CATEGORY_EMOJIS[expense.category] || '📦';
-
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Expense',
-      'Are you sure you want to delete this expense?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => onDelete(expense.id) },
-      ]
-    );
-  };
-
+export const ExpenseItem: React.FC<ExpenseItemProps> = ({
+  item,
+  onDelete,
+  onEdit,
+}) => {
   return (
-    <View style={[styles.container, isDeleting && styles.deleting]}>
-      <View style={styles.left}>
-        <Text style={styles.emoji}>{emoji}</Text>
-        <View style={styles.details}>
-          <Text style={styles.category}>{expense.category}</Text>
-          <Text style={styles.description}>{expense.description}</Text>
-          <Text style={styles.time}>{getTimeAgo(expense.created_at)}</Text>
+    <View className="flex-row bg-white p-4 rounded-2xl items-center justify-between shadow-sm border border-gray-100 mb-3">
+      <View className="flex-row items-center gap-3 flex-1">
+        <Text className="text-3xl w-12 h-12 text-center bg-gray-50 rounded-xl overflow-hidden leading-[48px]">
+          {CATEGORY_EMOJIS[item.category] || "📦"}
+        </Text>
+        <View className="flex-1">
+          <Text className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5">
+            {item.category}
+          </Text>
+          <Text
+            className="text-base font-semibold text-gray-800 mb-0.5"
+            numberOfLines={1}
+          >
+            {item.description}
+          </Text>
+          {item.merchant && (
+            <Text className="text-xs text-gray-600 italic mb-0.5">
+              at {item.merchant}
+            </Text>
+          )}
+          <Text className="text-xs text-gray-400 mt-0.5">
+            {getRelativeTime(item.created_at)}
+          </Text>
         </View>
       </View>
-      <View style={styles.right}>
-        <Text style={styles.amount}>₹{expense.amount}</Text>
-        <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
-          <Text style={styles.deleteBtn}>🗑️</Text>
-        </TouchableOpacity>
+      <View className="items-end gap-2">
+        <Text className="text-lg font-extrabold text-gray-800">
+          ₹{item.amount}
+        </Text>
+        <View className="flex-row gap-2">
+          <TouchableOpacity
+            onPress={() => onEdit(item)}
+            className="p-1.5 bg-blue-50 rounded-lg"
+          >
+            <Text className="text-sm text-blue-600 font-bold">✏️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => onDelete(item.id)}
+            className="p-1.5 bg-red-50 rounded-lg"
+          >
+            <Text className="text-sm text-red-600 font-bold">✕</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  deleting: {
-    opacity: 0.5,
-  },
-  left: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  emoji: {
-    fontSize: 28,
-    marginRight: 12,
-  },
-  details: {
-    flex: 1,
-  },
-  category: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  description: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  time: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-  },
-  right: {
-    alignItems: 'flex-end',
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  deleteBtn: {
-    fontSize: 20,
-    marginTop: 8,
-  },
-});
+};

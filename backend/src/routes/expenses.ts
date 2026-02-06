@@ -5,9 +5,28 @@ import {
   getAllExpenses,
   deleteExpense,
   getExpenseById,
+  updateExpense,
 } from "../database";
 
 const router = Router();
+
+// PUT update expense
+router.put("/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const updated = updateExpense(Number(id), updates);
+
+    if (updated) {
+      res.json({ success: true, expense: updated });
+    } else {
+      res.status(404).json({ success: false, error: "Expense not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to update expense" });
+  }
+});
 
 // GET all expenses
 router.get("/", (req, res) => {

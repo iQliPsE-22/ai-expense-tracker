@@ -1,85 +1,49 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
+  Text,
   TextInput,
   TouchableOpacity,
-  Text,
-  StyleSheet,
   ActivityIndicator,
 } from "react-native";
 
-interface Props {
-  onSubmit: (input: string) => Promise<void>;
-  isLoading: boolean;
+interface ExpenseInputProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
 }
 
-export function ExpenseInput({ onSubmit, isLoading }: Props) {
-  const [input, setInput] = useState("");
-
-  const handleSubmit = async () => {
-    if (input.trim() && !isLoading) {
-      await onSubmit(input.trim());
-      setInput("");
-    }
-  };
-
+export const ExpenseInput: React.FC<ExpenseInputProps> = ({
+  value,
+  onChangeText,
+  onSubmit,
+  isSubmitting,
+}) => {
   return (
-    <View style={styles.container}>
+    <View className="p-4 flex-row gap-3 bg-white shadow-sm z-10">
       <TextInput
-        style={styles.input}
+        className="flex-1 h-12 border border-blue-200 rounded-xl px-4 text-base bg-blue-50 text-gray-800"
         placeholder="e.g., Spent 500 on groceries"
-        placeholderTextColor="#999"
-        value={input}
-        onChangeText={setInput}
-        editable={!isLoading}
-        onSubmitEditing={handleSubmit}
+        value={value}
+        onChangeText={onChangeText}
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
+        editable={!isSubmitting}
       />
       <TouchableOpacity
-        style={[
-          styles.button,
-          (!input.trim() || isLoading) && styles.buttonDisabled,
-        ]}
-        onPress={handleSubmit}
-        disabled={!input.trim() || isLoading}
+        className={`w-16 h-12 rounded-xl justify-center items-center shadow-sm ${
+          !value.trim() || isSubmitting ? "bg-gray-300" : "bg-accent"
+        }`}
+        onPress={onSubmit}
+        disabled={!value.trim() || isSubmitting}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" size="small" />
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Add</Text>
+          <Text className="text-white font-semibold text-base">Add</Text>
         )}
       </TouchableOpacity>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    padding: 16,
-    gap: 12,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: "#333",
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 12,
-    paddingHorizontal: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
+};
