@@ -272,8 +272,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   successToast: {
+    position: "absolute",
+    bottom: 8,
+    zIndex: 1000,
     marginHorizontal: 16,
-    marginTop: 16,
     padding: 16,
     backgroundColor: "#ecfdf5", // green-50
     borderRadius: 12,

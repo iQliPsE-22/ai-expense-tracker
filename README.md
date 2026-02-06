@@ -1,71 +1,127 @@
 # AI Expense Tracker
 
-A full-stack expense tracking app that uses Google Gemini AI to parse natural language input.
+A full-stack expense tracking app that uses AI (Google Gemini) to parse natural language input into structured expense data.
+
+Built by: **Deepa**
+GitHub: [https://github.com/deepa/ai-expense-tracker](https://github.com/deepa/ai-expense-tracker)
+Time to build: **~4 hours** (with AI assistance)
+
+## 🎥 Demo
+
+_(Link to your screen recording)_
 
 ## 🛠️ Tech Stack
 
-- **Mobile:** React Native, Expo, TypeScript
+- **Mobile:** React Native (0.81), Expo (SDK 54), TypeScript, React 19
 - **Backend:** Node.js, Express, TypeScript
-- **Database:** SQLite
-- **AI:** Google Gemini API
+- **Database:** SQLite (via `better-sqlite3`)
+- **AI:** Google Gemini API (`gemini-2.5-flash`)
 
 ## 🚀 Setup Instructions
 
 ### Prerequisites
 
 - Node.js 18+
-- [Gemini API Key](https://makersuite.google.com/app/apikey)
+- npm or yarn
+- Expo CLI
+- Google Gemini API Key
 
 ### Backend
 
-1. Navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Configure Environment:
-   Create a `.env` file in the `backend` root and add your Gemini API Key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
+```bash
+cd backend
+npm install
+# Create .env file with GEMINI_API_KEY=your_key_here
+npm run dev
+```
 
 ### Mobile
 
-1. Navigate to the mobile folder:
-   ```bash
-   cd mobile
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the app:
-   ```bash
-   npm start
-   ```
-4. Scan the QR code with the Expo Go app on your phone.
+```bash
+cd mobile
+npm install
+npx expo start -c
+# Scan QR code with Expo Go app or press 'a' for Android Emulator
+```
 
 ## 📁 Project Structure
 
-- `backend/`: Node.js Express server
-  - `src/services/aiService.ts`: Gemini integration logic.
-  - `src/database.ts`: SQLite schema and CRUD operations.
-  - `src/routes/expenses.ts`: API endpoints.
-- `mobile/`: React Native Expo app
-  - `src/screens/ExpenseTrackerScreen.tsx`: Main UI component.
-  - `src/services/api.ts`: API client for backend communication.
+```
+ai-expense-tracker/
+├── backend/
+│   ├── src/
+│   │   ├── routes/         # API routes (expenses.ts)
+│   │   ├── services/       # AI logic (aiService.ts), Database (database.ts)
+│   │   └── index.ts        # Server entry point
+│   ├── data/               # SQLite database file
+│   └── package.json
+│
+└── mobile/
+    ├── src/
+    │   ├── components/     # Reusable UI (ExpenseItem, ExpenseInput)
+    │   ├── screens/        # Main screens (ExpenseTrackerScreen)
+    │   ├── services/       # API client (api.ts)
+    │   └── utils/          # Helpers (helpers.ts)
+    ├── App.tsx             # App entry point
+    └── package.json
+```
 
 ## 🤖 AI Prompt Design
 
-I used a system prompt that enforces strict JSON output from Gemini, handling:
+I used this system prompt to instruct the Gemini model to parse natural language into structured JSON:
 
-- **Amount extraction**: Handles numbers within text.
-- **Categorization**: Automatically maps terms to categories like "Food & Dining", "Transport", etc.
-- **Merchant extraction**: Identifies entities like "Starbucks", "Uber".
+```text
+You are an expense parser. Extract expense information from natural language input.
+
+RULES:
+1. Extract the amount as a number (no currency symbols)
+2. Default currency is INR unless explicitly mentioned (USD, EUR, etc.)
+3. Categorize into EXACTLY one of these categories:
+    - Food & Dining (restaurants, cafes, food delivery, groceries)
+    - Transport (uber, ola, taxi, fuel, parking, metro)
+    - Shopping (clothes, electronics, amazon, flipkart)
+    - Entertainment (movies, netflix, spotify, games)
+    - Bills & Utilities (electricity, water, internet, phone)
+    - Health (medicine, doctor, gym, pharmacy)
+    - Travel (flights, hotels, trips)
+    - Other (anything that doesn't fit above)
+4. Description should be a clean summary (not the raw input)
+5. Merchant is the company/store name if mentioned, null otherwise
+
+RESPOND ONLY WITH VALID JSON, no other text.
+```
+
+**Why this approach:**
+
+- **Strict Rules:** explicitly defining categories ensures consistent reporting.
+- **JSON Only:** Forcing JSON output makes it easy to parse reliably in the backend without regex parsing.
+- **Error Handling:** The prompt includes instructions for invalid input to gracefully handle non-expense text.
+
+## ⏱️ Time Breakdown
+
+| Task                    | Time         |
+| ----------------------- | ------------ |
+| Setup & Config          | 30 min       |
+| Backend & AI Service    | 60 min       |
+| Mobile UI (Refactoring) | 90 min       |
+| Integration & Testing   | 45 min       |
+| Polish & Docs           | 15 min       |
+| **Total**               | **~4 hours** |
+
+## 🔮 What I'd Add With More Time
+
+- [ ] **Authentication**: User login/signup to support multiple users.
+- [ ] **Charts & Analytics**: Visual breakdown of spending by category (Pie charts).
+- [ ] **Receipt Scanning**: Upload an image and use Multimodal AI to parse receipts.
+- [ ] **Budgeting**: Set monthly interaction limits and get alerts.
+
+## 📝 AI Tools Used
+
+- **Antigravity (Google DeepMind)**: Used for full-stack coding, debugging, and refactoring.
+- **Google Gemini 2.5 Flash**: The underlying LLM used for expense parsing.
+
+Most helpful prompt: _"Refactor the list items into a reusable component and ensure the styling matches using StyleSheet."_
+
+## 📜 License
+
+MIT - Feel free to use this for your own projects!
