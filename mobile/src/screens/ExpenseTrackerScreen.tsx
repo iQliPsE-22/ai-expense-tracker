@@ -12,6 +12,8 @@ import {
   Keyboard,
   Image,
   Modal,
+  StyleSheet,
+  Platform,
 } from "react-native";
 import { api, Expense } from "../services/api";
 import { ExpenseItem } from "../components/ExpenseItem";
@@ -127,20 +129,15 @@ export default function ExpenseTrackerScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <View className="p-5 pt-10 bg-white border-b border-gray-200">
-        <View className="flex-row items-center gap-3 mt-6">
-          <Image
-            source={require("../../assets/ico.png")}
-            className="w-12 h-12 rounded-xl"
-          />
-          <View className="flex-col">
-            <Text className="text-2xl font-extrabold text-gray-900 tracking-tighter">
-              AI Expense Tracker
-            </Text>
-            <Text className="text-sm text-gray-500 mt-1 font-medium">
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Image source={require("../../assets/ico.png")} style={styles.logo} />
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>AI Expense Tracker</Text>
+            <Text style={styles.subtitle}>
               Add expenses just like talking to a friend
             </Text>
           </View>
@@ -155,13 +152,11 @@ export default function ExpenseTrackerScreen() {
       />
 
       {lastAdded && (
-        <View className="mx-4 mt-4 p-4 bg-green-50 rounded-xl border border-green-200 flex-row items-center gap-3">
-          <Text className="text-xl">✅</Text>
-          <View className="flex-1">
-            <Text className="font-bold text-green-800 text-sm mb-0.5">
-              Expense Added!
-            </Text>
-            <Text className="text-green-700 text-xs">
+        <View style={styles.successToast}>
+          <Text style={styles.checkIcon}>✅</Text>
+          <View style={styles.successContent}>
+            <Text style={styles.successTitle}>Expense Added!</Text>
+            <Text style={styles.successSubtitle}>
               {lastAdded.category} • ₹{lastAdded.amount}
             </Text>
           </View>
@@ -172,14 +167,14 @@ export default function ExpenseTrackerScreen() {
         data={expenses}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
+        contentContainerStyle={styles.listContent}
         refreshing={refreshing}
         onRefresh={loadExpenses}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View className="items-center justify-center mt-20 opacity-70">
-            <Text className="text-5xl mb-4">👋</Text>
-            <Text className="text-base text-gray-500 font-medium">
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyEmoji}>👋</Text>
+            <Text style={styles.emptyText}>
               No expenses yet. Add your first one!
             </Text>
           </View>
@@ -192,54 +187,194 @@ export default function ExpenseTrackerScreen() {
         animationType="slide"
         onRequestClose={() => setEditingExpense(null)}
       >
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl p-6">
-            <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-xl font-bold">Edit Expense</Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Expense</Text>
               <TouchableOpacity
                 onPress={() => setEditingExpense(null)}
-                className="p-2 bg-gray-100 rounded-full"
+                style={styles.closeButton}
               >
                 <Text>✕</Text>
               </TouchableOpacity>
             </View>
 
-            <Text className="text-sm font-bold text-gray-500 mb-1">Amount</Text>
+            <Text style={styles.label}>Amount</Text>
             <TextInput
               value={editAmount}
               onChangeText={setEditAmount}
               keyboardType="numeric"
-              className="bg-gray-50 p-3 rounded-xl mb-4 font-bold text-lg border border-gray-200"
+              style={[styles.input, styles.amountInput]}
             />
 
-            <Text className="text-sm font-bold text-gray-500 mb-1">
-              Description
-            </Text>
+            <Text style={styles.label}>Description</Text>
             <TextInput
               value={editDescription}
               onChangeText={setEditDescription}
-              className="bg-gray-50 p-3 rounded-xl mb-4 border border-gray-200"
+              style={styles.input}
             />
 
-            <Text className="text-sm font-bold text-gray-500 mb-1">
-              Category
-            </Text>
+            <Text style={styles.label}>Category</Text>
             <TextInput
               value={editCategory}
               onChangeText={setEditCategory}
-              className="bg-gray-50 p-3 rounded-xl mb-6 border border-gray-200"
+              style={[styles.input, styles.lastInput]}
             />
 
-            <TouchableOpacity
-              onPress={handleUpdate}
-              className="bg-accent p-4 rounded-xl items-center"
-            >
-              <Text className="text-white font-bold text-lg">Save Changes</Text>
+            <TouchableOpacity onPress={handleUpdate} style={styles.saveButton}>
+              <Text style={styles.saveButtonText}>Save Changes</Text>
             </TouchableOpacity>
-            <View className="h-8" />
+            <View style={{ height: 32 }} />
           </View>
         </View>
       </Modal>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f9fafb", // gray-50
+    paddingTop: Platform.OS === "android" ? 24 : 0,
+  },
+  header: {
+    padding: 20,
+    paddingTop: 20,
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb", // gray-200
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 24, // mt-6
+    gap: 12,
+  },
+  logo: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
+  headerTextContainer: {
+    flexDirection: "column",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#111827", // gray-900
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6b7280", // gray-500
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  successToast: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: "#ecfdf5", // green-50
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#bbf7d0", // green-200
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  checkIcon: {
+    fontSize: 20,
+  },
+  successContent: {
+    flex: 1,
+  },
+  successTitle: {
+    fontWeight: "bold",
+    color: "#065f46", // green-800
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  successSubtitle: {
+    color: "#15803d", // green-700
+    fontSize: 12,
+  },
+  listContent: {
+    padding: 16,
+    gap: 12,
+    paddingBottom: 40,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 80,
+    opacity: 0.7,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#6b7280", // gray-500
+    fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    padding: 8,
+    backgroundColor: "#f3f4f6", // gray-100
+    borderRadius: 9999,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#6b7280", // gray-500
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: "#f9fafb", // gray-50
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb", // gray-200
+  },
+  amountInput: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  lastInput: {
+    marginBottom: 24,
+  },
+  saveButton: {
+    backgroundColor: "#7b47db", // accent
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+});

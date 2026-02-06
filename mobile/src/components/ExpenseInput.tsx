@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 
 interface ExpenseInputProps {
@@ -20,11 +21,14 @@ export const ExpenseInput: React.FC<ExpenseInputProps> = ({
   onSubmit,
   isSubmitting,
 }) => {
+  const isButtonDisabled = !value.trim() || isSubmitting;
+
   return (
-    <View className="p-4 flex-row gap-3 bg-white shadow-sm z-10">
+    <View style={styles.container}>
       <TextInput
-        className="flex-1 h-12 border border-blue-200 rounded-xl px-4 text-base bg-blue-50 text-gray-800"
+        style={styles.input}
         placeholder="e.g., Spent 500 on groceries"
+        placeholderTextColor="#9ca3af" // gray-400
         value={value}
         onChangeText={onChangeText}
         returnKeyType="done"
@@ -32,18 +36,68 @@ export const ExpenseInput: React.FC<ExpenseInputProps> = ({
         editable={!isSubmitting}
       />
       <TouchableOpacity
-        className={`w-16 h-12 rounded-xl justify-center items-center shadow-sm ${
-          !value.trim() || isSubmitting ? "bg-gray-300" : "bg-accent"
-        }`}
+        style={[
+          styles.button,
+          isButtonDisabled ? styles.buttonDisabled : styles.buttonActive,
+        ]}
         onPress={onSubmit}
-        disabled={!value.trim() || isSubmitting}
+        disabled={isButtonDisabled}
       >
         {isSubmitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className="text-white font-semibold text-base">Add</Text>
+          <Text style={styles.buttonText}>Add</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    flexDirection: "row",
+    gap: 12,
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 4,
+    zIndex: 10,
+  },
+  input: {
+    flex: 1,
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e9d7fe", // blue-200
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: "#f9f5ff", // blue-50
+    color: "#1f2937", // gray-800
+  },
+  button: {
+    width: 64,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  buttonActive: {
+    backgroundColor: "#7b47db", // accent
+  },
+  buttonDisabled: {
+    backgroundColor: "#d1d5db", // gray-300
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+});
